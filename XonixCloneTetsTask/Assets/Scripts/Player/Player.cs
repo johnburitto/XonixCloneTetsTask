@@ -13,8 +13,6 @@ public class Player : MonoBehaviour
         {
             Die();
         }
-
-        Debug.Log($"Health => {_health}");
     }
 
     public void ApplyDamage()

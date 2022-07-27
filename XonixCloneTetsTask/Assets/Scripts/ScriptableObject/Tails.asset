@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c61597f757d953c45855048204febcca, type: 3}
+  m_Name: Tails
+  m_EditorClassIdentifier: 
+  _groundTemplate: {fileID: 3994951974634761564, guid: c16ce1adb850a314e980264a905275db, type: 3}
+  _tailTemplate: {fileID: 3994951974634761564, guid: cbca04f8bb1a4664f93102160bde27c2, type: 3}
+  _seaTemplate: {fileID: 3994951974634761564, guid: 51d0d44c52532cb498df650e7ca855d7, type: 3}
