@@ -12,6 +12,27 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (SwipeDetector.SwipeUp())
+        {
+            _playerMover.MoveUp();
+        }
+
+        if (SwipeDetector.SwipeDown())
+        {
+            _playerMover.MoveDown();
+        }
+        
+        if (SwipeDetector.SwipeLeft())
+        {
+            _playerMover.MoveLeft();
+        }
+        
+        if (SwipeDetector.SwipeRight())
+        {
+            _playerMover.MoveRight();
+        }
+#else 
         if (Input.GetKeyUp(KeyCode.W))
         {
             _playerMover.MoveUp();
@@ -31,5 +52,6 @@ public class PlayerInput : MonoBehaviour
         {
             _playerMover.MoveRight();
         }
+#endif
     }
 }

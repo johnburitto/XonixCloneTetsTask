@@ -5,23 +5,35 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Player))]
 public class PlayerMover : MonoBehaviour
 {
-    [SerializeField] private float _startX;
-    [SerializeField] private float _endX;
-    [SerializeField] private float _startY;
-    [SerializeField] private float _endY;
     [SerializeField] private float _speed;
 
     private Vector3 _direction;
     private Player _player;
 
+    public Vector3 Direction => _direction;
+
     public event UnityAction<Vector3> ChangeDirection;
     public event UnityAction<Vector3> ChangePosition;
+    public event UnityAction<Vector3> Grounded;
 
     private void Start()
     {
         _direction = Vector3.zero;
         _player = GetComponent<Player>();
         StartCoroutine(Move());
+    }
+
+    private void Update()
+    {
+        var tileToCheck = GameField.Instance[transform.position];
+
+        if (tileToCheck)
+        {
+            if (tileToCheck.gameObject.TryGetComponent(out GroundTail groundTail))
+            {
+                Grounded?.Invoke(_direction);
+            }
+        }
     }
 
     private IEnumerator Move()
@@ -42,25 +54,25 @@ public class PlayerMover : MonoBehaviour
 
     private void IsHitCorner()
     {
-        if (transform.position.x < _startX)
+        if (transform.position.x < 0)
         {
             _direction = Vector3.zero;
-            transform.position = new Vector2(_startX, transform.position.y);
+            transform.position = new Vector2(0, transform.position.y);
         }
-        if (transform.position.x > _endX)
+        if (transform.position.x > GameField.Instance.Width)
         {
             _direction = Vector3.zero;
-            transform.position = new Vector2(_endX, transform.position.y);
+            transform.position = new Vector2(GameField.Instance.Width, transform.position.y);
         }
-        if (transform.position.y > _startY)
+        if (transform.position.y < 0)
         {
             _direction = Vector3.zero;
-            transform.position = new Vector2(transform.position.x, _startY);
+            transform.position = new Vector2(transform.position.x, 0);
         }
-        if (transform.position.y < _endY)
+        if (transform.position.y > GameField.Instance.Height)
         {
             _direction = Vector3.zero;
-            transform.position = new Vector2(transform.position.x, _endY);
+            transform.position = new Vector2(transform.position.x, GameField.Instance.Height);
         }
     }
 
