@@ -23,6 +23,7 @@ public class Player : MonoBehaviour
     public void Die()
     {
         Dead?.Invoke();
+        GameField.Instance[transform.position] = null;
         Destroy(gameObject);
     }
 }

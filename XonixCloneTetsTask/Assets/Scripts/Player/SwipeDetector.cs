@@ -34,22 +34,50 @@ public class SwipeDetector : MonoBehaviour, IDragHandler, IEndDragHandler
 
     public static bool SwipeUp()
     {
-        return _direction == SwipeDirection.Up;
+        if (_direction == SwipeDirection.Up)
+        {
+            _direction = SwipeDirection.None;
+
+            return true;
+        }
+
+        return false;
     }
 
     public static bool SwipeDown()
     {
-        return _direction == SwipeDirection.Down;
+        if (_direction == SwipeDirection.Down)
+        {
+            _direction = SwipeDirection.None;
+
+            return true;
+        }
+
+        return false;
     }
 
     public static bool SwipeLeft()
     {
-        return _direction == SwipeDirection.Left;
+        if (_direction == SwipeDirection.Left)
+        {
+            _direction = SwipeDirection.None;
+
+            return true;
+        }
+
+        return false;
     }
 
     public static bool SwipeRight()
     {
-        return _direction == SwipeDirection.Right;
+        if (_direction == SwipeDirection.Right)
+        {
+            _direction = SwipeDirection.None;
+
+            return true;
+        }
+
+        return false;
     }
 }
 

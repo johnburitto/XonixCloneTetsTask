@@ -12,7 +12,6 @@ public class PlayerMover : MonoBehaviour
 
     public Vector3 Direction => _direction;
 
-    public event UnityAction<Vector3> ChangeDirection;
     public event UnityAction<Vector3> ChangePosition;
     public event UnityAction<Vector3> Grounded;
 
@@ -33,6 +32,14 @@ public class PlayerMover : MonoBehaviour
             {
                 Grounded?.Invoke(_direction);
             }
+            if (tileToCheck.gameObject.TryGetComponent(out SeaEnemy seaEnemy))
+            {
+                _player.ApplyDamage();
+            }
+            if (tileToCheck.gameObject.TryGetComponent(out GroundEnemy groundEnemy))
+            {
+                _player.ApplyDamage();
+            }
         }
     }
 
@@ -46,6 +53,7 @@ public class PlayerMover : MonoBehaviour
             }
             
             transform.position += _direction;
+
             IsHitCorner();
 
             yield return new WaitForSeconds(1 / _speed);
@@ -59,20 +67,20 @@ public class PlayerMover : MonoBehaviour
             _direction = Vector3.zero;
             transform.position = new Vector2(0, transform.position.y);
         }
-        if (transform.position.x > GameField.Instance.Width)
+        if (transform.position.x > GameField.Instance.Width - 1)
         {
             _direction = Vector3.zero;
-            transform.position = new Vector2(GameField.Instance.Width, transform.position.y);
+            transform.position = new Vector2(GameField.Instance.Width - 1, transform.position.y);
         }
         if (transform.position.y < 0)
         {
             _direction = Vector3.zero;
             transform.position = new Vector2(transform.position.x, 0);
         }
-        if (transform.position.y > GameField.Instance.Height)
+        if (transform.position.y > GameField.Instance.Height - 1)
         {
             _direction = Vector3.zero;
-            transform.position = new Vector2(transform.position.x, GameField.Instance.Height);
+            transform.position = new Vector2(transform.position.x, GameField.Instance.Height - 1);
         }
     }
 
@@ -85,7 +93,6 @@ public class PlayerMover : MonoBehaviour
         else
         {
             _direction = Vector3.up;
-            ChangeDirection?.Invoke(transform.position);
         }
     }
 
@@ -98,7 +105,6 @@ public class PlayerMover : MonoBehaviour
         else
         {
             _direction = Vector3.down;
-            ChangeDirection?.Invoke(transform.position);
         }
     }
 
@@ -111,7 +117,6 @@ public class PlayerMover : MonoBehaviour
         else
         {
             _direction = Vector3.left;
-            ChangeDirection?.Invoke(transform.position);
         }
     }
 
@@ -124,7 +129,6 @@ public class PlayerMover : MonoBehaviour
         else
         {
             _direction = Vector3.right;
-            ChangeDirection?.Invoke(transform.position);
         }
     }
 }

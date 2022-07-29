@@ -10,6 +10,7 @@ public class GameField : MonoBehaviour
     public static GameField Instance { get; private set; }
     public int Width => _width;
     public int Height => _height;
+    public float Square { get; private set; }
     public GameObject this[Vector3 position]
     {
         get { return _field[(int)position.x, (int)position.y]; }
@@ -28,6 +29,7 @@ public class GameField : MonoBehaviour
 
     private void Start()
     {
-        _field = new GameObject[_width + 1, _height + 1];
+        _field = new GameObject[_width, _height];
+        Square = _width * _height;
     }
 }
