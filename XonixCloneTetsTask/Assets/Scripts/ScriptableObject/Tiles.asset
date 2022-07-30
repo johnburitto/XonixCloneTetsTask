@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c61597f757d953c45855048204febcca, type: 3}
-  m_Name: Tails
+  m_Name: Tiles
   m_EditorClassIdentifier: 
   _groundTemplate: {fileID: 3994951974634761564, guid: c16ce1adb850a314e980264a905275db, type: 3}
   _tailTemplate: {fileID: 3994951974634761564, guid: cbca04f8bb1a4664f93102160bde27c2, type: 3}

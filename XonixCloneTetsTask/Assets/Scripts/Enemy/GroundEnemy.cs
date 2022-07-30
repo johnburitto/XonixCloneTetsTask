@@ -14,33 +14,47 @@ public class GroundEnemy : MonoBehaviour
         StartCoroutine(Move());
     }
 
-    private void Update()
-    {
-        GameObject tileToCheck;
-
-        try 
-        {
-            tileToCheck = GameField.Instance[transform.position];
-        }
-        catch (Exception e)
-        {
-            tileToCheck = null;
-        }
-
-        if (!tileToCheck)
-        {
-            transform.position -= _direction;
-            BounceDirection();
-        }
-    }
-
     private IEnumerator Move()
     {
         while (true)
         {
             transform.position += _direction;
 
+            CollisionDetection();
+
             yield return new WaitForSeconds(1 / _speed);
+        }
+    }
+
+    private void CollisionDetection()
+    {
+        GameFieldElement tileToCheck;
+
+        try
+        {
+            tileToCheck = GameField.Instance[transform.position];
+        }
+        catch (Exception e)
+        {
+            tileToCheck = GameFieldElement.None;
+        }
+
+        if (tileToCheck == GameFieldElement.None)
+        {
+            transform.position -= _direction;
+            BounceDirection();
+        }
+        if (tileToCheck == GameFieldElement.Ground)
+        {
+            try
+            {
+                GameField.Instance[transform.position - _direction] = GameFieldElement.Ground;
+                GameField.Instance[transform.position] = GameFieldElement.Enemy;
+            }
+            catch (Exception e)
+            {
+                GameField.Instance[transform.position] = GameFieldElement.Enemy;
+            }
         }
     }
 
@@ -73,7 +87,7 @@ public class GroundEnemy : MonoBehaviour
 
         try
         {
-            if (!GameField.Instance[transform.position + newDirection])
+            if (GameField.Instance[transform.position + newDirection] == GameFieldElement.None)
             {
                 _direction = newDirection * -1;
             }

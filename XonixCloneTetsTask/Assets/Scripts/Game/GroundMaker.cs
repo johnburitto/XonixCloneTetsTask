@@ -1,29 +1,30 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class GroundMaker : MonoBehaviour
 {
-    [SerializeField] private Tails _tails;
+    [SerializeField] private Tiles _tails;
     [SerializeField] private GameObject _tailContainer;
     [SerializeField] private PlayerMover _playerMover;
+    [SerializeField] private Player _player;
 
     private List<GameObject> _createdTails = new List<GameObject>();
 
+    public event UnityAction CapturingTerritory;
+
     private void OnEnable()
     {
+        _player.GetDamage += OnGetDamage;
         _playerMover.ChangePosition += OnChangePosition;
         _playerMover.Grounded += CreateSaveArea;
     }
 
     private void OnDisable()
     {
+        _player.GetDamage -= OnGetDamage;
         _playerMover.ChangePosition -= OnChangePosition;
         _playerMover.Grounded -= CreateSaveArea;
-    }
-
-    private void Start()
-    {
-        CreateGamePlace();
     }
 
     public void CreateGamePlace()
@@ -40,15 +41,32 @@ public class GroundMaker : MonoBehaviour
                     var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
 
                     created.transform.position = new Vector2(i, j);
-                    GameField.Instance[i, j] = created;
+                    GameField.Instance[i, j] = GameFieldElement.Ground;
                 }
             }
         }
     }
 
+    public void ResetGamePlace()
+    {
+        GameField.Instance.ResetGameField();
+        CreateGamePlace();
+    }
+
+    private void OnGetDamage()
+    {
+        foreach (Transform element in _tailContainer.transform)
+        {
+            GameField.Instance[element.position] = GameFieldElement.None;
+            Destroy(element.gameObject);
+        }
+
+        _createdTails.Clear();
+    }
+
     public void OnChangePosition(Vector3 position)
     {
-        if (!GameField.Instance[position])
+        if (GameField.Instance[position] == GameFieldElement.None)
         {
             var created = Instantiate(_tails.TailTemplate, _tailContainer.transform);
             var player = _playerMover.gameObject.GetComponent<Player>();
@@ -56,7 +74,7 @@ public class GroundMaker : MonoBehaviour
             created.transform.position = position;
             created.gameObject.GetComponent<TailTail>().Init(player);
             _createdTails.Add(created);
-            GameField.Instance[created.transform.position] = created;
+            GameField.Instance[created.transform.position] = GameFieldElement.Tail;
         }
     }
 
@@ -75,6 +93,8 @@ public class GroundMaker : MonoBehaviour
 
             DeleteAllTailTails();
         }
+
+        CapturingTerritory?.Invoke();
 
         return;
     }
@@ -130,27 +150,24 @@ public class GroundMaker : MonoBehaviour
     {
         for (int i = 0; i < _createdTails.Count; i++)
         {
-            GameField.Instance[_createdTails[i].transform.position] = null;
+            GameField.Instance[_createdTails[i].transform.position] = GameFieldElement.None;
 
             var tileToCheck = GameField.Instance[_createdTails[i].transform.position];
             int index = 0;
 
-            while (!tileToCheck)
+            while (tileToCheck == GameFieldElement.None)
             {
                 var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
 
                 created.transform.position = _createdTails[i].transform.position + (index * direction);
-                GameField.Instance[created.transform.position] = created;
+                GameField.Instance[created.transform.position] = GameFieldElement.Ground;
                 index++;
                 tileToCheck = GameField.Instance[_createdTails[i].transform.position + (index * direction)];
 
-                if (tileToCheck)
+                if (tileToCheck == GameFieldElement.Enemy)
                 {
-                    if (tileToCheck.gameObject.TryGetComponent(out SeaEnemy seaEnemy))
-                    {
-                        Destroy(seaEnemy.gameObject);
-                        tileToCheck = null;
-                    }
+                    GameField.Instance[_createdTails[i].transform.position + (index * direction)] = GameFieldElement.None;
+                    tileToCheck = GameFieldElement.None;
                 }
             }
         }

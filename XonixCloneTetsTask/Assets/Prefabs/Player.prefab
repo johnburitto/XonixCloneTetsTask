@@ -110,10 +110,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b19710113fed4046a34b458a8e22ef5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _startX: -39.5
-  _endX: 39.5
-  _startY: 17.5
-  _endY: -17.5
   _speed: 20
 --- !u!114 &4170063215135104435
 MonoBehaviour:

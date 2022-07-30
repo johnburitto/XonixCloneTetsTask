@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Tiles", menuName = "Tails", order = 51)]
-public class Tails : ScriptableObject
+[CreateAssetMenu(fileName = "New Tiles", menuName = "Tiles", order = 51)]
+public class Tiles : ScriptableObject
 {
     [SerializeField] private GameObject _groundTemplate;
     [SerializeField] private GameObject _tailTemplate;

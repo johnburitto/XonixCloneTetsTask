@@ -29,27 +29,7 @@ public class SeaEnemy : MonoBehaviour
 
     private void Update()
     {
-        var tileToCheck = GameField.Instance[transform.position];
-
-        if (tileToCheck)
-        {
-            if (tileToCheck.gameObject.TryGetComponent(out GroundTail groundTail))
-            {
-                transform.position -= _direction;
-                BounceDirection();
-            }
-            if (tileToCheck.gameObject.TryGetComponent(out TailTail tailTail))
-            {
-                transform.position -= _direction;
-                _direction = Vector3.zero;
-                tailTail.Player.ApplyDamage();
-            }
-        }
-        else
-        {
-            GameField.Instance[transform.position - _direction] = null;
-            GameField.Instance[transform.position] = gameObject;
-        };
+        Dead?.Invoke();
     }
 
     private IEnumerator Move()
@@ -58,7 +38,31 @@ public class SeaEnemy : MonoBehaviour
         {
             transform.position += _direction;
 
+            CollisionDetection();
+
             yield return new WaitForSeconds(1 / _speed);
+        }
+    }
+
+    private void CollisionDetection()
+    {
+        var tileToCheck = GameField.Instance[transform.position];
+
+        if (tileToCheck == GameFieldElement.Ground)
+        {
+            transform.position -= _direction;
+            BounceDirection();
+        }
+        if (tileToCheck == GameFieldElement.Tail)
+        {
+            transform.position -= _direction;
+            BounceDirection();
+            Player.Instance.ApplyDamage();
+        }
+        if (tileToCheck == GameFieldElement.None)
+        {
+            GameField.Instance[transform.position - _direction] = GameFieldElement.None;
+            GameField.Instance[transform.position] = GameFieldElement.Enemy;
         }
     }
 
@@ -89,7 +93,7 @@ public class SeaEnemy : MonoBehaviour
             }
         }
 
-        if (GameField.Instance[transform.position + newDirection])
+        if (GameField.Instance[transform.position + newDirection] == GameFieldElement.Ground)
         {
             _direction = newDirection * -1;
         }
@@ -103,7 +107,7 @@ public class SeaEnemy : MonoBehaviour
     {
         try
         {
-            if (BlockedSides() > 2)
+            if (IsBlocked())
             {
                 Destroy(gameObject);
             }
@@ -114,27 +118,16 @@ public class SeaEnemy : MonoBehaviour
         }
     }
 
-    private int BlockedSides()
+    private bool IsBlocked()
     {
-        int numberOfSides = 0;
-
-        if (GameField.Instance[transform.position + Vector3.up])
+        if (GameField.Instance[transform.position + Vector3.up] == GameFieldElement.Ground &&
+            GameField.Instance[transform.position + Vector3.down] == GameFieldElement.Ground &&
+            GameField.Instance[transform.position + Vector3.left] == GameFieldElement.Ground &&
+            GameField.Instance[transform.position + Vector3.right] == GameFieldElement.Ground)
         {
-            numberOfSides++;
-        }
-        if (GameField.Instance[transform.position + Vector3.down])
-        {
-            numberOfSides++;
-        }
-        if (GameField.Instance[transform.position + Vector3.left])
-        {
-            numberOfSides++;
-        }
-        if (GameField.Instance[transform.position + Vector3.right])
-        {
-            numberOfSides++;
+            return true;
         }
 
-        return numberOfSides;
+        return false;
     }
 }

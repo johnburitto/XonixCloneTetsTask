@@ -22,27 +22,6 @@ public class PlayerMover : MonoBehaviour
         StartCoroutine(Move());
     }
 
-    private void Update()
-    {
-        var tileToCheck = GameField.Instance[transform.position];
-
-        if (tileToCheck)
-        {
-            if (tileToCheck.gameObject.TryGetComponent(out GroundTail groundTail))
-            {
-                Grounded?.Invoke(_direction);
-            }
-            if (tileToCheck.gameObject.TryGetComponent(out SeaEnemy seaEnemy))
-            {
-                _player.ApplyDamage();
-            }
-            if (tileToCheck.gameObject.TryGetComponent(out GroundEnemy groundEnemy))
-            {
-                _player.ApplyDamage();
-            }
-        }
-    }
-
     private IEnumerator Move()
     {
         while (true)
@@ -54,9 +33,25 @@ public class PlayerMover : MonoBehaviour
             
             transform.position += _direction;
 
-            IsHitCorner();
+            CollisionDetection();
 
             yield return new WaitForSeconds(1 / _speed);
+        }
+    }
+
+    private void CollisionDetection()
+    {
+        IsHitCorner();
+
+        var tileToCheck = GameField.Instance[transform.position];
+
+        if (tileToCheck == GameFieldElement.Ground)
+        {
+            Grounded?.Invoke(_direction);
+        }
+        if (tileToCheck == GameFieldElement.Enemy)
+        {
+            _player.ApplyDamage();
         }
     }
 
@@ -130,5 +125,10 @@ public class PlayerMover : MonoBehaviour
         {
             _direction = Vector3.right;
         }
+    }
+
+    public void ResetDirection()
+    {
+        _direction = Vector3.zero;
     }
 }
