@@ -12,6 +12,11 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
+        if (Game.Instance.IsPaused)
+        {
+            return;
+        }
+
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (SwipeDetector.SwipeUp())
         {

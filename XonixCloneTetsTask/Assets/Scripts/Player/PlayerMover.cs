@@ -49,7 +49,7 @@ public class PlayerMover : MonoBehaviour
         {
             Grounded?.Invoke(_direction);
         }
-        if (tileToCheck == GameFieldElement.Enemy)
+        if (tileToCheck == GameFieldElement.Enemy || tileToCheck == GameFieldElement.Tail)
         {
             _player.ApplyDamage();
         }

@@ -12,7 +12,7 @@ public class EnemySpawner : MonoBehaviour
 
         for (int i = 0; i < levelConfig.NumberOfEnemies; i++)
         {
-            if (i % 2 == 0) 
+            if (i % 3 == 0) 
             {
                 created = Instantiate(levelConfig.GroundEnemyTemplate, transform);
                 GenerateGroundEnemyPosition(out positionX, out poSitionY);

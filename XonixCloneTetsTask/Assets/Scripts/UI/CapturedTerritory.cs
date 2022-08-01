@@ -18,7 +18,7 @@ public class CapturedTerritory : MonoBehaviour
 
     private void OnCapturingTerritory()
     {
-        _capturedTerritory.text = "Captured territory: " + 
+        _capturedTerritory.text = "Territory " + 
             Mathf.Round((float)GameField.Instance.transform.childCount / GameField.Instance.Square * 100).ToString() + " - 80";
     }
 }

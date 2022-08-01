@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TailTail : MonoBehaviour
+public class TailTile : MonoBehaviour
 {
     [SerializeField] private Player _player;
 

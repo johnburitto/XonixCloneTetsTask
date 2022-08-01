@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3994951974634761562}
   - component: {fileID: 3994951974634761565}
-  - component: {fileID: 6285881400920768308}
   m_Layer: 0
   m_Name: Ground Tail
   m_TagString: Untagged
@@ -83,17 +82,3 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &6285881400920768308
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3994951974634761564}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da40498865826bd48ae4597b6a3d3692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _player: {fileID: 4170063215135104445, guid: 8d760442e83bf324db2f6807cef9c0f0, type: 3}
-  _groundMaker: {fileID: 3491154668465983586, guid: 7e57bc9939628c04093bb326a4422d22, type: 3}

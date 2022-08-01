@@ -4,19 +4,18 @@ using UnityEngine.UI;
 public class PauseButton : MonoBehaviour
 {
     [SerializeField] private Text _buttonText;
-    private bool _isClicked = false;
 
     public void PauseGame()
     {
-        if (!_isClicked)
+        if (!Game.Instance.IsPaused)
         {
-            _isClicked = true;
+            Game.Instance.IsPaused = true;
             _buttonText.text = "Resume";
             Time.timeScale = 0;
         }
         else
         {
-            _isClicked = false;
+            Game.Instance.IsPaused = false;
             _buttonText.text = "Pause";
             Time.timeScale = 1;
         }

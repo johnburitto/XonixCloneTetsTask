@@ -18,6 +18,6 @@ public class HeathBar : MonoBehaviour
 
     private void OnHealthChange()
     {
-        _healthBar.text = "Health: " + _player.Health.ToString();
+        _healthBar.text = "Health " + _player.Health.ToString();
     }
 }

@@ -13,6 +13,11 @@ public class SwipeDetector : MonoBehaviour, IDragHandler, IEndDragHandler
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (Game.Instance.IsPaused)
+        {
+            return;
+        }
+
         _dragDirection = (eventData.position - eventData.pressPosition).normalized;
         _direction = GetDirection();
     }

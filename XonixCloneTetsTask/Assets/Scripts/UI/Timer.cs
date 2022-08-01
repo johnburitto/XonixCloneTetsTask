@@ -8,6 +8,6 @@ public class Timer : MonoBehaviour
 
     private void Update()
     {
-        _timer.text = "Left time: " + Mathf.CeilToInt(_game.Timer).ToString();
+        _timer.text = "Time " + Mathf.CeilToInt(_game.Timer).ToString();
     }
 }

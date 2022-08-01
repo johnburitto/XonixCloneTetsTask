@@ -56,7 +56,6 @@ public class SeaEnemy : MonoBehaviour
         if (tileToCheck == GameFieldElement.Tail)
         {
             transform.position -= _direction;
-            BounceDirection();
             Player.Instance.ApplyDamage();
         }
         if (tileToCheck == GameFieldElement.None)
@@ -109,21 +108,23 @@ public class SeaEnemy : MonoBehaviour
         {
             if (IsBlocked())
             {
+                GameField.Instance[transform.position] = GameFieldElement.Ground;
                 Destroy(gameObject);
             }
         }
         catch (Exception e)
         {
+            GameField.Instance[transform.position] = GameFieldElement.Ground;
             Destroy(gameObject);
         }
     }
 
     private bool IsBlocked()
     {
-        if (GameField.Instance[transform.position + Vector3.up] == GameFieldElement.Ground &&
-            GameField.Instance[transform.position + Vector3.down] == GameFieldElement.Ground &&
-            GameField.Instance[transform.position + Vector3.left] == GameFieldElement.Ground &&
-            GameField.Instance[transform.position + Vector3.right] == GameFieldElement.Ground)
+        if (GameField.Instance[transform.position + Vector3.up] != GameFieldElement.None &&
+            GameField.Instance[transform.position + Vector3.down] != GameFieldElement.None &&
+            GameField.Instance[transform.position + Vector3.left] != GameFieldElement.None &&
+            GameField.Instance[transform.position + Vector3.right] != GameFieldElement.None)
         {
             return true;
         }

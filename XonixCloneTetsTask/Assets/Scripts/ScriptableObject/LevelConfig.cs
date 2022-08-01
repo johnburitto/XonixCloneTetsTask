@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 [CreateAssetMenu(fileName = "New LevelConfig", menuName = "LevelConfig", order = 52)]
 public class LevelConfig : ScriptableObject
@@ -11,13 +12,17 @@ public class LevelConfig : ScriptableObject
     public GameObject GroundEnemyTemplate => _groundEnemyTemplate;
     public int NumberOfEnemies => _numberOfEnemies;
 
+    public event UnityAction NextLevel;
+
     public void ResetLevelConfig()
     {
         _numberOfEnemies = 1;
+        NextLevel?.Invoke();
     }
 
-    public void Nextlevel()
+    public void Next()
     {
         _numberOfEnemies += 1;
+        NextLevel?.Invoke();
     }
 }

@@ -8,8 +8,15 @@ public class Game : MonoBehaviour
     [SerializeField] private LevelConfig _levelConfig;
 
     private float _timer;
+    public bool IsPaused = false;
 
     public float Timer => _timer;
+    public static Game Instance { get; private set; }
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void OnEnable()
     {
@@ -62,7 +69,7 @@ public class Game : MonoBehaviour
             _enemySpawner.transform.childCount == _enemySpawner.NumberOfGroundEnemies)
         {
             _timer = 60;
-            _levelConfig.Nextlevel();
+            _levelConfig.Next();
             _groundMaker.ResetGamePlace();
             _enemySpawner.ResetEnemies(_levelConfig);
             _player.ResetPlayer(3);

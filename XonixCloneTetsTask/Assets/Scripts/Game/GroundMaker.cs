@@ -49,6 +49,7 @@ public class GroundMaker : MonoBehaviour
 
     public void ResetGamePlace()
     {
+        DeleteAllTailTiles();
         GameField.Instance.ResetGameField();
         CreateGamePlace();
     }
@@ -72,9 +73,14 @@ public class GroundMaker : MonoBehaviour
             var player = _playerMover.gameObject.GetComponent<Player>();
 
             created.transform.position = position;
-            created.gameObject.GetComponent<TailTail>().Init(player);
+            created.gameObject.GetComponent<TailTile>().Init(player);
             _createdTails.Add(created);
             GameField.Instance[created.transform.position] = GameFieldElement.Tail;
+        }
+        if (GameField.Instance[position] == GameFieldElement.Enemy)
+        {
+            DeleteAllTailTiles();
+            _player.ApplyDamage();
         }
     }
 
@@ -82,24 +88,36 @@ public class GroundMaker : MonoBehaviour
     {
         if (_createdTails.Count > 0)
         {
-            if (IsLine())
+            CreateEdge();
+            
+            if (IsLine(direction))
             {
                 FillUnderLine(direction);
             }
             else
             {
-                FillPoly(direction);
+                Vector3 seedPosition = GenerateSeedPosition(direction);
+                FillPoly(seedPosition);
             }
 
-            DeleteAllTailTails();
+            DeleteAllTailTiles();
         }
 
         CapturingTerritory?.Invoke();
-
-        return;
     }
 
-    private bool IsLine()
+    private void CreateEdge()
+    {
+        for (int i = 0; i < _createdTails.Count; i++)
+        {
+            var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
+
+            created.transform.position = _createdTails[i].transform.position;
+            GameField.Instance[created.transform.position] = GameFieldElement.Ground;
+        }
+    }
+
+    private bool IsLine(Vector3 direction)
     {
         float firstX = _createdTails[0].transform.position.x;
         float firstY = _createdTails[0].transform.position.y;
@@ -109,6 +127,59 @@ public class GroundMaker : MonoBehaviour
             if (_createdTails[i].transform.position.x != firstX &&
                 _createdTails[i].transform.position.y != firstY)
             {
+                if (direction.y != 0)
+                {
+                    return IsBrokenVerticalLine(direction.y);
+                }
+                if (direction.x != 0)
+                {
+                    return IsBrokenHorizontalLine(direction.x);
+                } 
+            }
+        }
+
+        return true;
+    }
+
+    private bool IsBrokenVerticalLine(float idealValue)
+    {
+        if (_createdTails[_createdTails.Count - 1].transform.position.y - _createdTails[_createdTails.Count - 2].transform.position.y == 0)
+        {
+            return false;
+        } 
+        
+        if (_createdTails[0].transform.position.y - _createdTails[1].transform.position.y == 0)
+        {
+            return false;
+        } 
+
+        for (int i = 0; i < _createdTails.Count - 1; i++)
+        {
+            if ((_createdTails[i + 1].transform.position.y - _createdTails[i].transform.position.y) == -idealValue)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    private bool IsBrokenHorizontalLine(float idealValue)
+    {
+        if (_createdTails[_createdTails.Count - 1].transform.position.x - _createdTails[_createdTails.Count - 2].transform.position.x == 0)
+        {
+            return false;
+        } 
+        
+        if (_createdTails[0].transform.position.x - _createdTails[1].transform.position.x == 0)
+        {
+            return false;
+        } 
+
+        for (int i = 0; i < _createdTails.Count - 1; i++)
+        {
+            if ((_createdTails[i + 1].transform.position.x - _createdTails[i].transform.position.x) == -idealValue)
+            {
                 return false;
             }
         }
@@ -116,64 +187,140 @@ public class GroundMaker : MonoBehaviour
         return true;
     }
 
-    private void FillUnderLine(Vector3 direction)
+    private Vector3 GenerateSeedPosition(Vector3 direction)
     {
-        Vector3 newDirection = Vector3.zero;
+        var firstPosition = _createdTails[0].transform.position;
+        var lastPosition = _createdTails[_createdTails.Count - 1].transform.position;
 
-        if (direction.x != 0)
+        return StandartCondition(firstPosition, lastPosition, direction);
+    }
+
+    private Vector3 StandartCondition(Vector3 firstPosition, Vector3 lastPosition, Vector3 direction)
+    {
+        if (direction == Vector3.up || direction == Vector3.down)
         {
-            if (_playerMover.transform.position.y <= GameField.Instance.Height / 2)
+            if (firstPosition.x > lastPosition.x)
             {
-                newDirection = Vector3.down;
+                if (GameField.Instance[firstPosition + Vector3.left] == GameFieldElement.None)
+                {
+                    return firstPosition + Vector3.left;
+                }
+
+                return lastPosition + Vector3.right;
             }
             else
             {
-                newDirection = Vector3.up;
+                if (GameField.Instance[firstPosition + Vector3.right] == GameFieldElement.None)
+                {
+                    return firstPosition + Vector3.right;
+                }
+
+                return lastPosition + Vector3.left;
+            }
+        }
+        if (direction == Vector3.left || direction == Vector3.right)
+        {
+            if (firstPosition.y > lastPosition.y)
+            {
+                if (GameField.Instance[firstPosition + Vector3.down] == GameFieldElement.None)
+                {
+                    return firstPosition + Vector3.down;
+                }
+
+                return lastPosition + Vector3.up;
+            }
+            else
+            {
+                if (GameField.Instance[firstPosition + Vector3.up] == GameFieldElement.None)
+                {
+                    return firstPosition + Vector3.up;
+                }
+
+                return lastPosition + Vector3.down;
+            }
+        }
+
+        return Vector3.zero;
+    }
+
+    private void FillUnderLine(Vector3 direction)
+    {
+        Vector3 seedPosition = ChooseUnderLineSeed(_createdTails[0].transform.position, direction);
+
+        FillPoly(seedPosition);
+    }
+
+    private Vector3 ChooseUnderLineSeed(Vector3 startPosition, Vector3 direction)
+    {
+        if (direction.x != 0)
+        {
+            int distanceToNearestUp = 1;
+            int distanceToNearestDown = 1;
+
+            while (true) 
+            {
+                GameFieldElement upTile = GameField.Instance[startPosition + distanceToNearestUp * Vector3.up];
+                GameFieldElement downTile = GameField.Instance[startPosition + distanceToNearestDown * Vector3.down];
+
+                if (upTile != GameFieldElement.Ground)
+                {
+                    distanceToNearestUp++;
+                }
+                if (downTile != GameFieldElement.Ground)
+                {
+                    distanceToNearestDown++;
+                }
+
+                if (upTile == GameFieldElement.Ground || downTile == GameFieldElement.Ground)
+                {
+                    return distanceToNearestUp > distanceToNearestDown ? startPosition + Vector3.down : startPosition + Vector3.up;
+                }
             }
         }
         else
         {
-            if (_playerMover.transform.position.x <= GameField.Instance.Width / 2)
+            int distanceToNearestLeft = 1;
+            int distanceToNearestRight = 1;
+
+            while (true)
             {
-                newDirection = Vector3.left;
-            }
-            else
-            {
-                newDirection = Vector3.right;
-            }
-        }
+                GameFieldElement leftTile = GameField.Instance[startPosition + distanceToNearestLeft * Vector3.left];
+                GameFieldElement rightTile = GameField.Instance[startPosition + distanceToNearestRight * Vector3.right];
 
-        FillPoly(newDirection);
-    }
-
-    private void FillPoly(Vector3 direction)
-    {
-        for (int i = 0; i < _createdTails.Count; i++)
-        {
-            GameField.Instance[_createdTails[i].transform.position] = GameFieldElement.None;
-
-            var tileToCheck = GameField.Instance[_createdTails[i].transform.position];
-            int index = 0;
-
-            while (tileToCheck == GameFieldElement.None)
-            {
-                var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
-
-                created.transform.position = _createdTails[i].transform.position + (index * direction);
-                GameField.Instance[created.transform.position] = GameFieldElement.Ground;
-                index++;
-                tileToCheck = GameField.Instance[_createdTails[i].transform.position + (index * direction)];
-
-                if (tileToCheck == GameFieldElement.Enemy)
+                if (leftTile != GameFieldElement.Ground)
                 {
-                    GameField.Instance[_createdTails[i].transform.position + (index * direction)] = GameFieldElement.None;
-                    tileToCheck = GameFieldElement.None;
+                    distanceToNearestLeft++;
+                }
+                if (rightTile != GameFieldElement.Ground)
+                {
+                    distanceToNearestRight++;
+                }
+
+                if (leftTile == GameFieldElement.Ground || rightTile == GameFieldElement.Ground)
+                {
+                    return distanceToNearestLeft > distanceToNearestRight ? startPosition + Vector3.right : startPosition + Vector3.left;
                 }
             }
         }
     }
 
-    private void DeleteAllTailTails()
+    private void FillPoly(Vector3 position)
+    {
+        if (GameField.Instance[position] != GameFieldElement.Ground)
+        {
+            var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
+
+            created.transform.position = position;
+            GameField.Instance[created.transform.position] = GameFieldElement.Ground;
+
+            FillPoly(position + Vector3.up);
+            FillPoly(position + Vector3.down);
+            FillPoly(position + Vector3.left);
+            FillPoly(position + Vector3.right);
+        }
+    }
+
+    private void DeleteAllTailTiles()
     {
         _createdTails.Clear();
 

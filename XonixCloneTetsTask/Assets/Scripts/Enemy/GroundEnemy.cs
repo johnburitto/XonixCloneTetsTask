@@ -48,12 +48,16 @@ public class GroundEnemy : MonoBehaviour
         {
             try
             {
-                GameField.Instance[transform.position - _direction] = GameFieldElement.Ground;
+                if (GameField.Instance[transform.position - _direction] == GameFieldElement.Enemy)
+                {
+                    GameField.Instance[transform.position - _direction] = GameFieldElement.Ground;
+                }
+                
                 GameField.Instance[transform.position] = GameFieldElement.Enemy;
             }
             catch (Exception e)
             {
-                GameField.Instance[transform.position] = GameFieldElement.Enemy;
+                GameField.Instance[transform.position] = GameFieldElement.Ground;
             }
         }
     }
