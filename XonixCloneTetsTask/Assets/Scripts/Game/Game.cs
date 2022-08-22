@@ -36,7 +36,7 @@ public class Game : MonoBehaviour
     {
         _timer = 60;
         _levelConfig.ResetLevelConfig();
-        _groundMaker.CreateGamePlace();
+        GameField.Instance.ResetGameField();
         _enemySpawner.SpawnEnemies(_levelConfig);
     }
 
@@ -65,7 +65,7 @@ public class Game : MonoBehaviour
 
     private void OnIsLevelCompleted()
     {
-        if (((float)GameField.Instance.transform.childCount / GameField.Instance.Square > 0.8f) ||
+        if (((float)GameField.Instance.transform.childCount / GameField.Instance.NumberOfAllElements > 0.8f) ||
             _enemySpawner.transform.childCount == _enemySpawner.NumberOfGroundEnemies)
         {
             _timer = 60;

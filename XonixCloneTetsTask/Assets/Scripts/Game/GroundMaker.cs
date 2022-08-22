@@ -4,12 +4,15 @@ using UnityEngine.Events;
 
 public class GroundMaker : MonoBehaviour
 {
-    [SerializeField] private Tiles _tails;
+    [SerializeField] private Tiles _tiles;
     [SerializeField] private GameObject _tailContainer;
     [SerializeField] private PlayerMover _playerMover;
     [SerializeField] private Player _player;
 
     private List<GameObject> _createdTails = new List<GameObject>();
+    private List<Vector3> _vertex = new List<Vector3>();
+    private float[] _leftSide;
+    private float[] _rightSide;
 
     public event UnityAction CapturingTerritory;
 
@@ -27,31 +30,16 @@ public class GroundMaker : MonoBehaviour
         _playerMover.Grounded -= CreateSaveArea;
     }
 
-    public void CreateGamePlace()
+    private void Start()
     {
-        for (int i = 0; i < GameField.Instance.Width; i++)
-        {
-            for (int j = 0; j < GameField.Instance.Height; j++)
-            {
-                if ((i == 0 || i == GameField.Instance.Width - 1) ||
-                    (j == 0 || j == GameField.Instance.Height - 1) || 
-                    (i == 1 || i == GameField.Instance.Width - 2) ||
-                    (j == 1 || j == GameField.Instance.Height - 2))
-                {
-                    var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
-
-                    created.transform.position = new Vector2(i, j);
-                    GameField.Instance[i, j] = GameFieldElement.Ground;
-                }
-            }
-        }
+        _leftSide = new float[GameField.Instance.Height];
+        _rightSide = new float[GameField.Instance.Height];
     }
 
     public void ResetGamePlace()
     {
         DeleteAllTailTiles();
         GameField.Instance.ResetGameField();
-        CreateGamePlace();
     }
 
     private void OnGetDamage()
@@ -69,40 +57,36 @@ public class GroundMaker : MonoBehaviour
     {
         if (GameField.Instance[position] == GameFieldElement.None)
         {
-            var created = Instantiate(_tails.TailTemplate, _tailContainer.transform);
-            var player = _playerMover.gameObject.GetComponent<Player>();
+            var created = Instantiate(_tiles.TailTemplate, _tailContainer.transform);
 
             created.transform.position = position;
-            created.gameObject.GetComponent<TailTile>().Init(player);
+            created.gameObject.GetComponent<TailTile>().Init(Player.Instance);
             _createdTails.Add(created);
             GameField.Instance[created.transform.position] = GameFieldElement.Tail;
-        }
-        if (GameField.Instance[position] == GameFieldElement.Enemy)
-        {
-            DeleteAllTailTiles();
-            _player.ApplyDamage();
         }
     }
 
     public void CreateSaveArea(Vector3 direction)
     {
-        if (_createdTails.Count > 0)
+        if (_createdTails.Count <= 0)
         {
-            CreateEdge();
-            
-            if (IsLine(direction))
-            {
-                FillUnderLine(direction);
-            }
-            else
-            {
-                Vector3 seedPosition = GenerateSeedPosition(direction);
-                FillPoly(seedPosition);
-            }
-
-            DeleteAllTailTiles();
+            CapturingTerritory?.Invoke();
+            return;
         }
 
+        CreateEdge();
+
+        if (IsLine(direction))
+        {
+            FillUnderLine(direction);
+        }
+        else
+        {
+            Vector3 seedPosition = GenerateSeedPosition(direction);
+            FillPoly(seedPosition);
+        }
+
+        DeleteAllTailTiles();
         CapturingTerritory?.Invoke();
     }
 
@@ -110,7 +94,7 @@ public class GroundMaker : MonoBehaviour
     {
         for (int i = 0; i < _createdTails.Count; i++)
         {
-            var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
+            var created = Instantiate(_tiles.GroundTemplate, GameField.Instance.transform);
 
             created.transform.position = _createdTails[i].transform.position;
             GameField.Instance[created.transform.position] = GameFieldElement.Ground;
@@ -306,9 +290,9 @@ public class GroundMaker : MonoBehaviour
 
     private void FillPoly(Vector3 position)
     {
-        if (GameField.Instance[position] != GameFieldElement.Ground)
+        if (GameField.Instance[position] == GameFieldElement.None)
         {
-            var created = Instantiate(_tails.GroundTemplate, GameField.Instance.transform);
+            var created = Instantiate(_tiles.GroundTemplate, GameField.Instance.transform);
 
             created.transform.position = position;
             GameField.Instance[created.transform.position] = GameFieldElement.Ground;
@@ -323,6 +307,12 @@ public class GroundMaker : MonoBehaviour
     private void DeleteAllTailTiles()
     {
         _createdTails.Clear();
+        
+        for (int i = 0; i < GameField.Instance.Height; i++)
+        {
+            _leftSide[i] = GameField.Instance.Width - 1;
+            _rightSide[i] = 0;
+        }
 
         foreach (Transform element in _tailContainer.transform)
         {

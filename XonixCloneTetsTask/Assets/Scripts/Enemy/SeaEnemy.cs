@@ -1,46 +1,26 @@
-using System;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class SeaEnemy : MonoBehaviour
 {
     [SerializeField] private float _speed;
 
     private Vector3 _direction;
-
-    public event UnityAction Dead;
-
-    private void OnEnable()
-    {
-        Dead += Die;
-    }
-
-    private void OnDisable()
-    {
-        Dead += Die;
-    }
+    private float _elapsedTime;
 
     private void Start()
     {
-        _direction = new Vector2(UnityEngine.Random.Range(0, 2) * 2 - 1, UnityEngine.Random.Range(0, 2) * 2 - 1);
-        StartCoroutine(Move());
+        _direction = new Vector2(Random.Range(0, 2) * 2 - 1, Random.Range(0, 2) * 2 - 1);
     }
 
     private void Update()
     {
-        Dead?.Invoke();
-    }
+        _elapsedTime += Time.deltaTime;
 
-    private IEnumerator Move()
-    {
-        while (true)
+        if (_elapsedTime >= (1f / _speed))
         {
             transform.position += _direction;
-
             CollisionDetection();
-
-            yield return new WaitForSeconds(1 / _speed);
+            _elapsedTime = 0;
         }
     }
 
@@ -51,84 +31,53 @@ public class SeaEnemy : MonoBehaviour
         if (tileToCheck == GameFieldElement.Ground)
         {
             transform.position -= _direction;
-            BounceDirection();
+            _direction = GetBounceDirection();
         }
         if (tileToCheck == GameFieldElement.Tail)
         {
             transform.position -= _direction;
             Player.Instance.ApplyDamage();
         }
-        if (tileToCheck == GameFieldElement.None)
+        if (transform.position == Player.Instance.transform.position)
         {
-            GameField.Instance[transform.position - _direction] = GameFieldElement.None;
-            GameField.Instance[transform.position] = GameFieldElement.Enemy;
+            Player.Instance.ApplyDamage();
         }
-    }
-
-    private void BounceDirection()
-    {
-        Vector3 newDirection = Vector3.zero;
-
-        if (_direction.x > 0)
+        if (IsBlocked())
         {
-            if (_direction.y < 0)
-            {
-                newDirection = new Vector2(-_direction.x, _direction.y);
-            }
-            else
-            {
-                newDirection = new Vector2(_direction.x, -_direction.y);
-            }
-        }
-        else
-        {
-            if (_direction.y < 0)
-            {
-                newDirection = new Vector2(_direction.x, -_direction.y);
-            }
-            else
-            {
-                newDirection = new Vector2(-_direction.x, _direction.y);
-            }
-        }
-
-        if (GameField.Instance[transform.position + newDirection] == GameFieldElement.Ground)
-        {
-            _direction = newDirection * -1;
-        }
-        else
-        {
-            _direction = newDirection;
-        }
-    }
-
-    private void Die()
-    {
-        try
-        {
-            if (IsBlocked())
-            {
-                GameField.Instance[transform.position] = GameFieldElement.Ground;
-                Destroy(gameObject);
-            }
-        }
-        catch (Exception e)
-        {
-            GameField.Instance[transform.position] = GameFieldElement.Ground;
-            Destroy(gameObject);
+            Die();
         }
     }
 
     private bool IsBlocked()
     {
-        if (GameField.Instance[transform.position + Vector3.up] != GameFieldElement.None &&
-            GameField.Instance[transform.position + Vector3.down] != GameFieldElement.None &&
-            GameField.Instance[transform.position + Vector3.left] != GameFieldElement.None &&
-            GameField.Instance[transform.position + Vector3.right] != GameFieldElement.None)
+        if (GameField.Instance[transform.position + Vector3.up] == GameFieldElement.Ground &&
+            GameField.Instance[transform.position + Vector3.down] == GameFieldElement.Ground &&
+            GameField.Instance[transform.position + Vector3.left] == GameFieldElement.Ground &&
+            GameField.Instance[transform.position + Vector3.right] == GameFieldElement.Ground)
         {
             return true;
         }
 
         return false;
+    }
+    
+    private void Die()
+    {
+        GameField.Instance[transform.position] = GameFieldElement.Ground;
+        Destroy(gameObject);
+    }
+
+    private Vector3 GetBounceDirection()
+    {
+        Vector3 newDirection = new Vector2(-_direction.y, _direction.x);
+
+        if (GameField.Instance[transform.position + newDirection] == GameFieldElement.Ground)
+        {
+            return newDirection * -1;
+        }
+        else
+        {
+            return newDirection;
+        }
     }
 }
